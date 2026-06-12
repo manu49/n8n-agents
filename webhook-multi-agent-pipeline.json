@@ -1,0 +1,202 @@
+{
+  "name": "Webhook Multi-Agent Pipeline (Research -> Writer)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "research-writer",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b1c2d3e4-1111-4aaa-9bbb-000000000101",
+      "name": "Webhook",
+      "webhookId": "c2d3e4f5-2222-4bbb-8ccc-000000000102"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.topic }}",
+        "options": {
+          "systemMessage": "You are a research specialist. Given a topic, gather the key facts, context, notable dates, names, and 4-6 concise bullet points that a writer would need. Use the Wikipedia tool to verify facts before stating them. Output ONLY the research notes as clear bullet points - do not write the final article."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "b1c2d3e4-3333-4ccc-9ddd-000000000103",
+      "name": "Research Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        180,
+        240
+      ],
+      "id": "b1c2d3e4-4444-4ddd-9eee-000000000104",
+      "name": "Research Model"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        360,
+        240
+      ],
+      "id": "b1c2d3e4-5555-4eee-9fff-000000000105",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a short, engaging article based on these research notes:\n\n{{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a skilled writer and editor. Using ONLY the research notes provided, write a clear, engaging article of roughly 150-200 words for a general audience in a friendly, informative tone. Do not invent facts. Return ONLY the finished article text, with a short title on the first line."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        620,
+        0
+      ],
+      "id": "b1c2d3e4-6666-4fff-9aaa-000000000106",
+      "name": "Writer Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        240
+      ],
+      "id": "b1c2d3e4-7777-4aaa-9bbb-000000000107",
+      "name": "Writer Model"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"topic\": $('Webhook').item.json.body.topic, \"article\": $json.output } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        0
+      ],
+      "id": "b1c2d3e4-8888-4bbb-9ccc-000000000108",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Writer Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Writer Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Writer Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aabbccdd-aaaa-4bbb-8ccc-000000000199",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
