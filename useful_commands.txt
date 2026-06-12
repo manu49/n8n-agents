@@ -4,5 +4,5 @@ CURL: curl -X POST 'https://manupriyagupta.app.n8n.cloud/webhook-test/multi-agen
 
 Stringfy the context: 
 
-Shared context from Data Table 1:
-${JSON.stringify($json['shared-context'], null, 2)}
+Shared Context:
+{{ JSON.stringify($json["context-data"], null, 2) }}
