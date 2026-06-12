@@ -1,0 +1,8 @@
+CURL: curl -X POST 'https://manupriyagupta.app.n8n.cloud/webhook-test/multi-agent' \
+  -H 'Content-Type: application/json' \
+  -d '{"request_id":"request-001","message":"What are the support hours for Acme?"}'
+
+Stringfy the context: 
+
+Shared context from Data Table 1:
+${JSON.stringify($json['shared-context'], null, 2)}
